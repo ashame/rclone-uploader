@@ -12,6 +12,8 @@
   "author": "Nathan Liu (https://github.com/ashame)",
   "license": "GPL-3.0+",
   "dependencies": {
+    "cliui": "^7.0.4",
+    "colors.ts": "^1.0.20",
     "inquirer": "^8.1.2",
     "inquirer-file-tree-selection-prompt": "^1.0.12"
   },

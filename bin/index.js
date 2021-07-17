@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+require('colors.ts');
+const exc = require('child_process').exec;
 const inquirer = require('inquirer');
 const inquirerFileTreeSelectionPrompt = require('inquirer-file-tree-selection-prompt');
-const exc = require('child_process').exec;
 const join = require('path').join;
+const cliui = require('cliui');
 
 const defaultCommand = Object.freeze(['rclone']);
 const defaultFlags = Object.freeze([
@@ -46,7 +48,7 @@ async function main(providedPath) {
                 },
             ])
         ).source;
-    providedPath && console.log('source:', providedPath);
+    providedPath && console.log('\n ', 'Source:'.bold, providedPath.cyan);
 
     const { remote, method, bwLimit, dest } = await inquirer.prompt([
         {
@@ -79,21 +81,12 @@ async function main(providedPath) {
         },
     ]);
 
-    const command = [...defaultCommand, method, source, join(remote, dest)];
+    const command = [...defaultCommand, method, `"${source}"`, `"${join(remote, dest)}"`];
     const flags = [
         ...defaultFlags,
         method == 'copy' ? '--create-empty-src-dirs' : '--delete-empty-src-dirs',
         `--bwlimit=${bwLimit}`,
     ];
-
-    console.log({
-        source,
-        dest: join(remote, dest),
-        method,
-        bwLimit,
-        command: command.join(' '),
-        flags,
-    });
 
     inquirer
         .prompt([
@@ -110,26 +103,41 @@ async function main(providedPath) {
 }
 
 function upload(command, flags, dryRun) {
+    const ui = cliui({ width: 80 });
+    ui.div(
+        `      command:\t  ${command.join(' ').cyan}\n` +
+            // eslint-disable-next-line prettier/prettier
+            `       dryRun:\t  ${dryRun ? 'true'.yellow : 'false'.red}\n` +
+            // eslint-disable-next-line prettier/prettier
+            `        flags:\t  ${[...flags, `--log-file=${join(logFolder, logFile)}`].join(' ').cyan}\n` +
+            // eslint-disable-next-line prettier/prettier
+            `       source:\t  ${command[2].cyan}\n` +
+            // eslint-disable-next-line prettier/prettier
+            `  destination:\t  ${command[3].cyan}\n`
+    );
+
     console.clear();
-    console.log();
-    console.log(''.padStart(5), 'rclone-uploader', `[${command[3]}]`);
-    console.log(''.padStart(3), ''.padEnd(22 + command[3].length, '-'));
-    console.log(''.padStart(5), 'command: '.padStart(9), command.join(' '));
-    console.log(''.padStart(5), 'dryRun: '.padStart(9), dryRun);
     console.log(
         ''.padStart(5),
-        'flags: '.padStart(9),
-        [...flags, `--log-file=${join(logFolder, logFile)}`].join(' ')
+        'rclone-uploader'.bold,
+        `[${command[3].replace(/"/g, '').grey(14)}]`
     );
-    console.log(''.padStart(5), 'src: '.padStart(9), command[2]);
-    console.log(''.padStart(5), 'dest: '.padStart(9), command[3]);
-    console.log();
+    console.log(''.padStart(3), ''.padEnd(22 + command[3].length, '-'));
+    console.log(ui.toString());
 
     const cmd = `${command.join(' ')} ${flags.join(' ')} ${
         dryRun ? '--dry-run' : `--log-file=${join(logFolder, logFile)}`
     }`;
 
-    console.log('\n > ', cmd);
+    console.log(
+        ' >> '.grey(14),
+        command[0].yellow,
+        command[1].magenta,
+        command[2].grey(14),
+        command[3].grey(14),
+        ...flags.map(cmd => (cmd == '--dry-run' ? cmd.yellow : cmd.cyan)),
+        dryRun ? '--dry-run'.yellow : `--log-file=${join(logFolder, logFile)}`.cyan
+    );
 
     exec(cmd)
         .then(cp => {
