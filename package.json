@@ -1,0 +1,25 @@
+{
+  "name": "rclone-uploader",
+  "version": "2.0.0",
+  "description": "easy uploading tool built for use with rclone",
+  "main": "bin/index.js",
+  "bin": {
+    "rclone-uploader": "./bin/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nathan Liu (https://github.com/ashame)",
+  "license": "GPL-3.0+",
+  "dependencies": {
+    "inquirer": "^8.1.2",
+    "inquirer-file-tree-selection-prompt": "^1.0.12"
+  },
+  "devDependencies": {
+    "eslint": "^7.30.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.2"
+  }
+}

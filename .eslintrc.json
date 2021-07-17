@@ -1,0 +1,19 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 2020,
+        "ecmaFeatures": {
+            "impliedStrict": false
+        }
+    },
+    "env": {
+        "es6": true,
+        "commonjs": true,
+        "node": true
+    },
+    "extends": ["eslint:recommended", "plugin:prettier/recommended", "prettier"],
+    "parser": "",
+    "plugins": ["prettier"],
+    "rules": {
+        "prettier/prettier": "warn"
+    }
+}
