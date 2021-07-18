@@ -101,11 +101,11 @@ function prepUpload(command, flags, dryRun) {
                 type: 'confirm',
                 name: 'canContinue',
                 message: `Start ${dryRun ? 'dry run' : 'upload'}?`,
-                default: true,
+                default: dryRun,
             },
         ])
         .then(({ canContinue }) => {
-            canContinue ? upload(command, flags, true) : console.clear() || main();
+            canContinue ? upload(command, flags, dryRun) : console.clear() || main();
         });
 }
 
@@ -137,7 +137,7 @@ function upload(command, flags, dryRun) {
     }`;
 
     console.log(
-        ' >> '.grey(14),
+        '\n >> '.grey(14),
         command[0].yellow,
         command[1].magenta,
         command[2].grey(14),
