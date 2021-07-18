@@ -14,10 +14,9 @@ const defaultFlags = process.env.RCLONE_UPLOADER_FLAGS
     ? Object.freeze(process.env.RCLONE_UPLOADER_FLAGS.trim().split(' '))
     : Object.freeze(['--drive-chunk-size=128M', '--buffer-size=64M', '--verbose', '--fast-list']);
 
+const homeDir = require('os').homedir();
 const logFile = `rclone-uploader-${Date.now()}.log`;
-const logFolder =
-    process.env.RCLONE_UPLOADER_LOG_FOLDER ||
-    join(require('os').homedir(), '.rclone-uploader/logs');
+const logFolder = process.env.RCLONE_UPLOADER_LOG_FOLDER ?? join(homeDir, '.rclone-uploader/logs');
 
 const methods = Object.freeze(['copy', 'move']);
 
@@ -89,12 +88,19 @@ async function main(providedPath) {
         `--bwlimit=${bwLimit}`,
     ];
 
+    prepUpload(command, flags, true);
+}
+
+function prepUpload(command, flags, dryRun) {
+    console.clear();
+    console.log(statusString(command, flags, true), '\n');
+
     inquirer
         .prompt([
             {
                 type: 'confirm',
                 name: 'canContinue',
-                message: 'Start dry run?',
+                message: `Start ${dryRun ? 'dry run' : 'upload'}?`,
                 default: true,
             },
         ])
@@ -103,7 +109,7 @@ async function main(providedPath) {
         });
 }
 
-function upload(command, flags, dryRun) {
+function statusString(command, flags, dryRun) {
     const ui = cliui({ width: 80 });
     // eslint-disable-next-line prettier/prettier
     ui.div('\n' +
@@ -122,10 +128,10 @@ function upload(command, flags, dryRun) {
             // eslint-disable-next-line prettier/prettier
         `  destination:\t  ${command[3].cyan}\n`
     );
+    return ui.toString();
+}
 
-    console.clear();
-    console.log(ui.toString());
-
+function upload(command, flags, dryRun) {
     const cmd = `${command.join(' ')} ${flags.join(' ')} ${
         dryRun ? '--dry-run' : `--log-file=${join(logFolder, logFile)}`
     }`;
@@ -156,7 +162,7 @@ function upload(command, flags, dryRun) {
                             default: false,
                         },
                     ])
-                    .then(({ canContinue }) => upload(command, flags, !canContinue))
+                    .then(({ canContinue }) => prepUpload(command, flags, !canContinue))
                     .catch(err => console.log('prompt err:', err));
             } else {
                 exec(`tail ${join(logFolder, logFile)}`)
