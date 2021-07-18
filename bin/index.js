@@ -1,24 +1,25 @@
 #!/usr/bin/env node
 
 require('colors.ts');
+require('dotenv').config();
+
+const cliui = require('cliui');
 const exc = require('child_process').exec;
 const inquirer = require('inquirer');
 const inquirerFileTreeSelectionPrompt = require('inquirer-file-tree-selection-prompt');
 const join = require('path').join;
-const cliui = require('cliui');
 
-const defaultCommand = Object.freeze(['rclone']);
-const defaultFlags = Object.freeze([
-    '--drive-chunk-size=128M',
-    '--buffer-size=64M',
-    '--verbose',
-    '--fast-list',
-]);
+const baseCommand = Object.freeze(['rclone']);
+const defaultFlags = process.env.RCLONE_UPLOADER_FLAGS
+    ? Object.freeze(process.env.RCLONE_UPLOADER_FLAGS.trim().split(' '))
+    : Object.freeze(['--drive-chunk-size=128M', '--buffer-size=64M', '--verbose', '--fast-list']);
 
-const logFolder = 'F:\\rclone\\uploadLogs';
 const logFile = `rclone-uploader-${Date.now()}.log`;
+const logFolder =
+    process.env.RCLONE_UPLOADER_LOG_FOLDER ||
+    join(require('os').homedir(), '.rclone-uploader/logs');
 
-const methods = ['copy', 'move'];
+const methods = Object.freeze(['copy', 'move']);
 
 inquirer.registerPrompt('file-tree-selection', inquirerFileTreeSelectionPrompt);
 
@@ -81,7 +82,7 @@ async function main(providedPath) {
         },
     ]);
 
-    const command = [...defaultCommand, method, `"${source}"`, `"${join(remote, dest)}"`];
+    const command = [...baseCommand, method, `"${source}"`, `"${join(remote, dest)}"`];
     const flags = [
         ...defaultFlags,
         method == 'copy' ? '--create-empty-src-dirs' : '--delete-empty-src-dirs',
@@ -104,25 +105,25 @@ async function main(providedPath) {
 
 function upload(command, flags, dryRun) {
     const ui = cliui({ width: 80 });
-    ui.div(
+    // eslint-disable-next-line prettier/prettier
+    ui.div('\n' +
+            // eslint-disable-next-line prettier/prettier
+        `      ${'rclone-uploader'.bold}\t [${command[3].replace(/"/g, '').grey(14)}]\n` +
+            // eslint-disable-next-line prettier/prettier
+        [''.padStart(3), ''.padEnd(22 + command[3].length, '-')].join(' ') + '\n' + 
+            // eslint-disable-next-line prettier/prettier
         `      command:\t  ${command.join(' ').cyan}\n` +
             // eslint-disable-next-line prettier/prettier
-            `       dryRun:\t  ${dryRun ? 'true'.yellow : 'false'.red}\n` +
+        `       dryRun:\t  ${dryRun ? 'true'.yellow : 'false'.red}\n` +
             // eslint-disable-next-line prettier/prettier
-            `        flags:\t  ${[...flags, `--log-file=${join(logFolder, logFile)}`].join(' ').cyan}\n` +
+        `        flags:\t  ${[...flags, `--log-file=${join(logFolder, logFile)}`].join(' ').cyan}\n` +
             // eslint-disable-next-line prettier/prettier
-            `       source:\t  ${command[2].cyan}\n` +
+        `       source:\t  ${command[2].cyan}\n` +
             // eslint-disable-next-line prettier/prettier
-            `  destination:\t  ${command[3].cyan}\n`
+        `  destination:\t  ${command[3].cyan}\n`
     );
 
     console.clear();
-    console.log(
-        ''.padStart(5),
-        'rclone-uploader'.bold,
-        `[${command[3].replace(/"/g, '').grey(14)}]`
-    );
-    console.log(''.padStart(3), ''.padEnd(22 + command[3].length, '-'));
     console.log(ui.toString());
 
     const cmd = `${command.join(' ')} ${flags.join(' ')} ${

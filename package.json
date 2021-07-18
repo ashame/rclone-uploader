@@ -14,6 +14,7 @@
   "dependencies": {
     "cliui": "^7.0.4",
     "colors.ts": "^1.0.20",
+    "dotenv": "^10.0.0",
     "inquirer": "^8.1.2",
     "inquirer-file-tree-selection-prompt": "^1.0.12"
   },
