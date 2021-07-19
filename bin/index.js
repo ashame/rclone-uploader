@@ -110,7 +110,7 @@ function prepUpload(command, flags, dryRun) {
 }
 
 function statusString(command, flags, dryRun) {
-    const ui = cliui({ width: 80 });
+    const ui = cliui({ width: 100 });
     // eslint-disable-next-line prettier/prettier
     ui.div('\n' +
             // eslint-disable-next-line prettier/prettier
@@ -168,9 +168,19 @@ function upload(command, flags, dryRun) {
                 exec(`tail ${join(logFolder, logFile)}`)
                     .then(cp => {
                         console.log();
-                        if (cp.error) console.error(cp.error);
                         if (cp.stdout) console.log(cp.stdout);
                         if (cp.stderr) console.log(cp.stderr);
+                        if (cp.error) return console.error(cp.error);
+                        inquirer
+                            .prompt([
+                                {
+                                    type: 'confirm',
+                                    name: 'restart',
+                                    message: 'Upload finished - upload another file?',
+                                    default: true,
+                                },
+                            ])
+                            .then(({ restart }) => restart && main());
                     })
                     .catch(err => console.log('tail err:', err));
             }
