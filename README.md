@@ -16,6 +16,11 @@
 
 ### 🏠 [Homepage](https://github.com/ashame/rclone-uploader)
 
+## Prerequisites
+
+- `rclone` must be acccessible from `PATH`
+- `rclone` must be previously configured (setup with remotes available via `rclone listremotes`)
+
 ## Install
 
 ```sh
