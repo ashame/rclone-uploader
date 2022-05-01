@@ -9,8 +9,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ashame/rclone-uploader.git"
+  },
   "author": "Nathan Liu (https://github.com/ashame)",
   "license": "GPL-3.0+",
+  "bugs": {
+    "url": "https://github.com/ashame/rclone-uploader/issues"
+  },
   "dependencies": {
     "cliui": "^7.0.4",
     "colors.ts": "^1.0.20",
